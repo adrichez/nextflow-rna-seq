@@ -1,0 +1,5 @@
+input: "data/metadata/single_end.csv"
+genome_fasta_zip: "data/genome/fasta/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
+hisat2_index_zip: "data/genome/index/hisat2/genome_index.tar.gz"
+gtf_zip: "data/genome/annotation/Saccharomyces_cerevisiae.R64-1-1.115.gtf.gz"
+report_id: "multiqc_report_se"

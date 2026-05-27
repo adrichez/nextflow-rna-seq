@@ -1,0 +1,7 @@
+name: nextflow-env
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - nextflow>=25.10.2
+  - graphviz
