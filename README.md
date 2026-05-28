@@ -198,7 +198,8 @@ conda activate nextflow-env
 
 **4. Verificar gestor de contenedores:**
 
-> ⚠️ Asegúrate de tener instalado y accesible en tu sistema **Docker** (para uso local) o **Singularity/Apptainer** (para clústeres HPC). El entorno Conda solo instala Nextflow; las herramientas bioinformáticas pesadas se descargarán automáticamente como imágenes de contenedores la primera vez que lances el pipeline.
+> [!IMPORTANT]
+> Asegúrate de tener instalado y accesible en tu sistema **Docker** (para uso local) o **Singularity/Apptainer** (para clústeres HPC). El entorno Conda solo instala Nextflow; las herramientas bioinformáticas pesadas se descargarán automáticamente como imágenes de contenedores la primera vez que lances el pipeline.
 
 
 
@@ -219,7 +220,8 @@ Si decides no usar Conda, deberás instalar Java (versión 11 o superior) y desc
 # Ejemplo: Instalación de FastQC, HISAT2, etc. a través del gestor de paquetes de tu OS o desde el código fuente.
 ```
 
-> ⚠️ Esta opción requiere que instales manualmente todas y cada una de las herramientas (`FastQC`, `Trim Galore`, `HISAT2`, `FeatureCounts`, `MultiQC`) y las añadas al PATH de tu sistema operativo. No se recomienda porque es propenso a errores de versiones y rompe la filosofía de reproducibilidad del pipeline.
+> [!IMPORTANT]
+> Esta opción requiere que instales manualmente todas y cada una de las herramientas (`FastQC`, `Trim Galore`, `HISAT2`, `FeatureCounts`, `MultiQC`) y las añadas al PATH de tu sistema operativo. No se recomienda porque es propenso a errores de versiones y rompe la filosofía de reproducibilidad del pipeline.
 > 
 > Con cualquiera de las dos opciones (y con tus datos listos), ya se podrá ejecutar el pipeline principal.
 
@@ -235,10 +237,24 @@ Si decides no usar Conda, deberás instalar Java (versión 11 o superior) y desc
 
 <h2 id="section-5">5. 🚀 Uso</h2>
 
+El pipeline se puede ejecutar de dos maneras: descargando el código a tu máquina (**clonando el repositorio**) o invocando el código en la nube (**directamente desde GitHub**, sin descargarlo).
+
 Toda la configuración de rutas y parámetros se gestiona fácilmente a través del archivo `params.yaml`. Para iniciar el análisis, ejecuta el pipeline usando Nextflow:
 
+
+**Opción A: Ejecución con el repositorio clonado localmente**
+
 ```bash
-nextflow run <rnaseq_{se/pe}.nf> -params-file params.yaml -profile <perfiles>
+git clone https://github.com/adrichez/nextflow-rna-seq.git
+cd nextflow-rna-seq
+nextflow run rnaseq_{se/pe}.nf -params-file params.yaml -profile <perfiles>
+```
+
+
+**Opción B: Ejecución directa desde GitHub (sin clonar)**
+
+```bash
+nextflow run adrichez/nextflow-rna-seq -main-script rnaseq_{se/pe}.nf -r main -params-file params.yaml -profile <perfiles>
 ```
 
 Se pueden utilizar dos scripts principales dependiendo de tus datos:
@@ -246,21 +262,15 @@ Se pueden utilizar dos scripts principales dependiendo de tus datos:
 * `rnaseq_se.nf` para lecturas simples (Single-End).
 * `rnaseq_pe.nf` para lecturas emparejadas (Paired-End).
 
-
-
-
-<br>
-
-<img src="assets/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
-
-<h3 id="section-5.1">🔹 Configuración de parámetros (`params.yaml`)</h3>
-
 * Ingresa las **rutas de los archivos de entrada** (`reads`, `genome`, `annotation`, `hisat2_index`).
 * Opcionalmente ajusta:
 * El directorio de salida (por defecto `outdir: "results"`)
 * Otros parámetros específicos del análisis
 
 Los resultados finales, incluyendo los conteos génicos y los reportes de calidad, se guardarán automáticamente en la carpeta `results/`.
+
+> [!NOTE]
+> **Nota sobre la ejecución remota (GitHub):** Si ejecutas el pipeline directamente desde GitHub, el archivo referenciado con `-params-file params.yaml` **será el de tu entorno local**. Esto te permite tener una carpeta que contenga únicamente tu archivo `params.yaml` y ejecutar el código de la nube directamente sobre tus propios datos.
 
 Ejemplo de este archivo `params.yaml`:
 
@@ -272,32 +282,11 @@ gtf_zip: "data/genome/annotation/Saccharomyces_cerevisiae.R64-1-1.115.gtf.gz"
 report_id: "multiqc_report_se"
 ```
 
-
-
-
-<br>
-
-<img src="assets/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
-
-<h3 id="section-5.2">🔹 Perfiles de ejecución (Profiles)</h3>
-
 El archivo `nextflow.config` incluye perfiles preconfigurados para adaptar el pipeline a tu infraestructura y simplificar las fases de prueba. Puedes combinar un perfil de entorno con un perfil de prueba separándolos por comas.
-
-
-
-<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
-
-<h4 id="section-5.2.1">Infraestructura y Entornos</h4>
 
 * `local_docker`: Ejecuta los procesos directamente en tu máquina local utilizando **Docker** para el aislamiento del software.
 * `cluster_apptainer`: Diseñado para servidores o clústeres compartidos. Utiliza **Apptainer (Singularity)** de forma segura (sin privilegios de root) pero ejecuta las tareas secuencialmente sin gestor de colas.
 * `slurm_apptainer`: Diseñado para clústeres **HPC administrados por SLURM**. Envía las tareas a las colas del clúster utilizando **Apptainer** y optimiza dinámicamente los recursos hardware (ej. 8 CPUs base para tareas genéricas y 16 CPUs dedicadas para el proceso `HISAT2_ALIGN`).
-
-
-
-<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
-
-<h4 id="section-5.2.2">Modos de Prueba (Datasets de ejemplo)</h4>
 
 * `test_se_fasta`: Prueba rápida para datos *Single-End* partiendo del genoma bruto en FASTA (construye el índice desde cero).
 * `test_se_index`: Prueba rápida para datos *Single-End* cargando un índice de HISAT2 ya pregenerado en formato `.tar.gz`.
@@ -305,35 +294,33 @@ El archivo `nextflow.config` incluye perfiles preconfigurados para adaptar el pi
 * `test_pe_index`: Prueba rápida para datos *Paired-End* cargando un índice de HISAT2 ya pregenerado en formato `.tar.gz`.
 
 
-
-<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
-
-<h4 id="section-5.2.3">Ejemplo de prueba rápida en local (Paired-End con índice ya listo)</h4>
+**Ejemplo de ejecución (test) con repositorio clonado:**
 
 ```bash
 nextflow run rnaseq_pe.nf -profile test_pe_index,local_docker
 ```
 
 
+**Ejemplo de ejecución (test) directa desde GitHub:**
 
-<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
+```bash
+nextflow run adrichez/nextflow-rna-seq -main-script rnaseq_pe.nf -r main -profile test_pe_index,local_docker
+```
 
-<h4 id="section-5.2.4">Ejemplo de ejecución real con tus propios datos en Clúster HPC (SLURM)</h4>
+
+**Ejemplo de ejecución (parámetros definidos) con repositorio clonado:**
 
 ```bash
 nextflow run rnaseq_pe.nf -params-file params.yaml -profile slurm_apptainer
 ```
 
+**Ejemplo de ejecución (parámetros definidos) directa desde GitHub:**
 
+```bash
+nextflow run adrichez/nextflow-rna-seq -main-script rnaseq_pe.nf -r main -params-file params.yaml -profile slurm_apptainer
+```
 
-
-<br>
-
-<img src="assets/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
-
-<h3 id="section-5.3">🔹 Limpieza del directorio de trabajo</h3>
-
-Ejecuta el **script de limpieza** para liberar espacio.
+Si has optado por clonar el repositorio localmente, puedes ejecutar el siguiente **script de limpieza** para liberar espacio en el caso de que lo consideres necesario:
 
 ```bash
 bash clean_nextflow.sh
@@ -347,6 +334,7 @@ o bien:
 
 El script eliminará automáticamente los directorios temporales `work/` y `.nextflow/`, así como los logs intermedios, conservando únicamente tus resultados finales en `results/`.
 
+> [!NOTE]
 > Durante todo el proceso, Nextflow mostrará un **registro de progreso** en la terminal indicando el estado de cada tarea y, al finalizar, se muestra el **tiempo total empleado** y el estado de la ejecución.
 
 
