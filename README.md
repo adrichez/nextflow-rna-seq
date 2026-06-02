@@ -184,17 +184,20 @@ git clone https://github.com/adrichez/nexflow-rna-seq.git
 cd nexflow-rna-seq
 ```
 
+
 **2. Crear un entorno Conda:**
 
 ```bash
 conda env create -f enviroment.yml
 ```
 
+
 **3. Activar el entorno:**
 
 ```bash
 conda activate nextflow-env
 ```
+
 
 **4. Verificar gestor de contenedores:**
 
@@ -210,20 +213,56 @@ conda activate nextflow-env
 
 <h3 id="section-4.2">🔹 Opción 2: Instalación manual local (no recomendada)</h3>
 
-**1. Instalar Nextflow y Java:**
+**1. Clonar el repositorio:**
 
-Si decides no usar Conda, deberás instalar Java (versión 11 o superior) y descargar el ejecutable de **Nextflow** directamente en tu máquina.
-
-**2. Instalar herramientas bioinformáticas:**
+Al igual que en la opción anterior, necesitas descargar el código del pipeline:
 
 ```bash
-# Ejemplo: Instalación de FastQC, HISAT2, etc. a través del gestor de paquetes de tu OS o desde el código fuente.
+git clone https://github.com/adrichez/nexflow-rna-seq.git
+cd nexflow-rna-seq
 ```
 
-> [!IMPORTANT]
-> Esta opción requiere que instales manualmente todas y cada una de las herramientas (`FastQC`, `Trim Galore`, `HISAT2`, `FeatureCounts`, `MultiQC`) y las añadas al PATH de tu sistema operativo. No se recomienda porque es propenso a errores de versiones y rompe la filosofía de reproducibilidad del pipeline.
-> 
-> Con cualquiera de las dos opciones (y con tus datos listos), ya se podrá ejecutar el pipeline principal.
+**2. Instalar Java y Nextflow:**
+
+Si decides no usar Conda, necesitarás tener instalado Java (versión 11 o superior). Una vez instalado, puedes descargar el ejecutable de **Nextflow** directamente en tu máquina.
+
+```bash
+# 1. Instalar Java (Ejemplo para Ubuntu/Debian)
+sudo apt update
+sudo apt install default-jre
+
+# 2. Descargar Nextflow
+curl -s https://get.nextflow.io | bash
+
+# 3. Dar permisos de ejecución y moverlo al PATH
+chmod +x nextflow
+sudo mv nextflow /usr/local/bin/
+```
+
+**3. Instalar herramientas bioinformáticas:**
+
+Deberás instalar y añadir al `PATH` de tu sistema operativo todas las herramientas requeridas por el pipeline. Puedes hacerlo a través del gestor de paquetes de tu OS, usando `pip`, o compilando desde el código fuente.
+
+Las herramientas necesarias son:
+
+* `FastQC`
+* `Trim Galore` (y su dependencia `Cutadapt`)
+* `HISAT2`
+* `featureCounts` (incluido en el paquete `Subread`)
+* `MultiQC`
+
+```bash
+# Ejemplo de instalación en distribuciones basadas en Debian/Ubuntu:
+sudo apt install fastqc cutadapt hisat2 subread multiqc
+
+# Nota: Trim Galore normalmente requiere instalación manual descargando el script.
+```
+
+> [!WARNING]
+> **Problemas de reproducibilidad**
+> Esta opción requiere una gestión manual de las dependencias. No se recomienda porque es muy propenso a errores por incompatibilidad de versiones entre diferentes sistemas operativos y rompe la filosofía de reproducibilidad total del pipeline. Si el pipeline falla usando esta vía, es probable que se deba a la versión de una de las herramientas de tu sistema.
+
+Con cualquiera de las dos opciones completadas (y con tus datos listos en el formato adecuado), ya se podrá ejecutar el pipeline principal.
 
 
 
